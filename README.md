@@ -9,6 +9,11 @@ Python-based simulation of an observability pipeline that:
 
 This is a portfolio project focused on practical system design and operational workflows.
 
+## Deployment Mode
+
+- Local mode is the default and fully supported.
+- AWS/EC2 deployment is optional and used for infrastructure demonstration.
+
 ## What It Does
 
 ### Log pipeline
