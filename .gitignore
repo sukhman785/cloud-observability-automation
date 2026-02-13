@@ -1,0 +1,14 @@
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.DS_Store
+docs/
+
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/*.pem
+
+/terraform
+*.zip
