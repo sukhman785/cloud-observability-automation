@@ -120,14 +120,14 @@ resource "aws_instance" "app_server" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
 
-  user_data = templatefile("${path.module}/user_data.sh.tftpl", {
+  user_data_base64 = base64gzip(templatefile("${path.module}/user_data.sh.tftpl", {
     requirements_txt = file("${path.root}/../requirements.txt")
     generator_py     = file("${path.root}/../src/generator.py")
     processor_py     = file("${path.root}/../src/processor.py")
     alerts_py        = file("${path.root}/../src/alerts.py")
     actions_py       = file("${path.root}/../src/actions.py")
     main_py          = file("${path.root}/../src/main.py")
-  })
+  }))
 
   tags = {
     Name = "CloudObservabilityPlatform"
