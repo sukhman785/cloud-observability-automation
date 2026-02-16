@@ -76,8 +76,15 @@ export default function App() {
 
       socket.onmessage = (event) => {
         try {
-          const payload = JSON.parse(event.data) as { type: 'snapshot' | 'delta'; items: Alert[] };
+          const payload = JSON.parse(event.data) as {
+            type: 'snapshot' | 'delta';
+            items: Alert[];
+            summary?: Summary;
+          };
           setAlerts((current) => mergeAlerts(current, payload.items));
+          if (payload.summary) {
+            setSummary(payload.summary);
+          }
         } catch {
           // Ignore invalid frame.
         }

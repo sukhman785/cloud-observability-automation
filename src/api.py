@@ -63,7 +63,13 @@ async def alerts_ws(websocket: WebSocket):
     last_seen_id = storage.get_latest_alert_row_id()
 
     # Send initial snapshot so UI has deterministic startup state.
-    await websocket.send_json({"type": "snapshot", "items": storage.get_alerts(limit=100)})
+    await websocket.send_json(
+        {
+            "type": "snapshot",
+            "items": storage.get_alerts(limit=100),
+            "summary": storage.get_metrics_summary(),
+        }
+    )
 
     try:
         while True:
@@ -71,9 +77,15 @@ async def alerts_ws(websocket: WebSocket):
             if latest_id > last_seen_id:
                 items = storage.get_alerts_since_id(after_id=last_seen_id, limit=200)
                 if items:
-                    await websocket.send_json({"type": "delta", "items": items})
+                    await websocket.send_json(
+                        {
+                            "type": "delta",
+                            "items": items,
+                            "summary": storage.get_metrics_summary(),
+                        }
+                    )
                     last_seen_id = items[-1]["id"]
 
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(0.25)
     except WebSocketDisconnect:
         return

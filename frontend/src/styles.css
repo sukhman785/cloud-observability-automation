@@ -133,6 +133,7 @@ h1 {
   display: grid;
   gap: 0.9rem;
   grid-template-columns: 1fr 1.8fr;
+  align-items: start;
 }
 
 .panel {
