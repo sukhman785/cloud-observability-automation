@@ -10,6 +10,10 @@ Python-based simulation of an observability pipeline that:
 
 This is a portfolio project focused on practical system design and operational workflows.
 
+## Demo GIF
+
+![Cloud Observability Platform Demo](demo/demo.gif)
+
 ## Current Status
 
 Implemented through **Phase 3 foundation**:
