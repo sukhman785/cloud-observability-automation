@@ -1,3 +1,6 @@
 colorama
 scikit-learn
 numpy
+fastapi
+uvicorn
+websockets

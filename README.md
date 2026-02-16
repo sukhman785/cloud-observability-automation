@@ -5,9 +5,19 @@ Python-based simulation of an observability pipeline that:
 - detects rule-based and ML-based anomalies
 - triggers alerts
 - executes simulated remediation actions
+- exposes API + realtime frontend dashboard for live visibility
 - can be deployed to AWS EC2 using Terraform
 
 This is a portfolio project focused on practical system design and operational workflows.
+
+## Current Status
+
+Implemented through **Phase 2**:
+- SQLite persistence for logs and alerts
+- FastAPI read APIs
+- Realtime alert updates in the frontend via WebSocket
+- Alert lifecycle actions from UI (`ACKNOWLEDGED`, `SUPPRESSED`)
+- Automated tests for storage, processor, alerts, anomaly detection, and API behavior
 
 ## Deployment Mode
 
@@ -21,6 +31,8 @@ This is a portfolio project focused on practical system design and operational w
 - `src/processor.py` analyzes each log entry and raises alerts when rules or ML detection trigger.
 - `src/alerts.py` enriches and prints alert payloads.
 - `src/actions.py` runs simulated remediation actions based on alert type.
+- `src/storage.py` persists logs + alerts in SQLite.
+- `src/api.py` serves dashboard data and alert lifecycle actions via FastAPI.
 
 ### Detection coverage
 - High CPU utilization
@@ -32,37 +44,81 @@ This is a portfolio project focused on practical system design and operational w
 ## Repository Structure
 
 ```text
-src/         Application code
+src/         Application code (simulation + API + persistence)
 tests/       Unit tests
 infra/       Terraform + EC2 bootstrap template
-docs/        Project planning and walkthrough notes
+frontend/    React + Vite dashboard
+docs/        Local planning notes (ignored in git)
 ```
 
 ## Quick Start (Local)
 
-### 1. Install dependencies
+### 1. Install Python dependencies
 
 ```bash
 python3 -m pip install -r requirements-dev.txt
 ```
 
-### 2. Run simulation
+### 2. Run simulation (terminal A)
 
 ```bash
-python3 src/main.py --duration 15
+python3 src/main.py --duration 120
 ```
 
 Optional runtime tuning:
 
 ```bash
-python3 src/main.py --duration 30 --min-interval 0.05 --max-interval 0.2
+python3 src/main.py --duration 120 --min-interval 0.05 --max-interval 0.2
 ```
 
-### 3. Run tests
+### 3. Run API (terminal B)
+
+```bash
+python3 -m uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 4. Run frontend (terminal C)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Dashboard: `http://localhost:5173`
+
+### 5. Run tests
 
 ```bash
 python3 -m pytest -q
 ```
+
+## Demo Flow
+
+1. Start simulator, API, and frontend.
+2. Open `http://localhost:5173`.
+3. Watch the alert table update in near real time (WebSocket stream).
+4. Use `Ack` on an `OPEN` alert and verify status changes to `ACKNOWLEDGED`.
+5. Use `Suppress` and verify status changes to `SUPPRESSED`.
+6. Confirm summary cards update (`Open`, `Acknowledged`, `Suppressed`).
+7. Refresh browser and verify alert status persistence.
+
+## API Endpoints
+
+### Read endpoints
+- `GET /health`
+- `GET /alerts?limit=100`
+- `GET /logs?limit=200`
+- `GET /metrics/summary`
+
+### Alert lifecycle actions
+- `POST /alerts/{alert_id}/acknowledge`
+- `POST /alerts/{alert_id}/suppress`
+
+### Realtime stream
+- `WS /ws/alerts`
+  - `snapshot` frame on connect (latest alerts)
+  - `delta` frame for newly inserted alerts
 
 ## Deploy to AWS (EC2 + Terraform)
 
@@ -99,9 +155,6 @@ CI intentionally does not deploy infrastructure.
 
 ## Roadmap
 
-- Add Slack/webhook alert sink
-- Add persistent storage for alert history
-- Add dashboard for trends and incident timeline
-- Package app and deploy via container workflow
-
-## Documentation
+- Phase 3: Docker Compose for one-command startup (`simulator + api + frontend`)
+- Auth + RBAC
+- Incident assignment workflows

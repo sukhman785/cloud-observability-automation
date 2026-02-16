@@ -11,12 +11,20 @@ from src.generator import LogGenerator
 from src.processor import LogProcessor
 from src.alerts import AlertEngine
 from src.actions import ActionAutomator
+from src.storage import Storage
+
 
 def main():
     parser = argparse.ArgumentParser(description="Cloud Observability Simulation")
     parser.add_argument("--duration", type=int, help="Duration to run simulation in seconds", default=None)
     parser.add_argument("--min-interval", type=float, help="Minimum delay between generated logs", default=0.1)
     parser.add_argument("--max-interval", type=float, help="Maximum delay between generated logs", default=0.5)
+    parser.add_argument(
+        "--db-path",
+        type=str,
+        help="SQLite database path for persistence",
+        default="data/observability.db",
+    )
     args = parser.parse_args()
     min_interval = max(0.01, args.min_interval)
     max_interval = max(min_interval, args.max_interval)
@@ -32,11 +40,12 @@ def main():
     processor = LogProcessor()
     alert_engine = AlertEngine()
     automator = ActionAutomator()
+    storage = Storage(db_path=args.db_path)
 
     print("Components initialized. Starting log stream...\n")
-    
+
     start_time = time.time()
-    
+
     try:
         while True:
             # Check duration
@@ -46,26 +55,29 @@ def main():
 
             # 1. Generate Log
             log_entry = generator.generate_log()
-            
+            storage.insert_log(log_entry)
+
             # Print log summary (simulating log ingestion)
             if log_entry['level'] in ['ERROR', 'CRITICAL', 'WARNING']:
                 print(f"[{log_entry['timestamp']}] {log_entry['level']}: {log_entry['message']}")
-            
+
             # 2. Process Log
             alert = processor.process_log(log_entry)
-            
+
             # 3. Handle Alert if triggered
             if alert:
                 enriched_alert = alert_engine.trigger_alert(alert)
+                storage.insert_alert(enriched_alert)
                 automator.execute_action(enriched_alert)
-            
+
             # Simulate variable traffic
             time.sleep(random.uniform(min_interval, max_interval))
 
     except KeyboardInterrupt:
         print("\nStopping simulation...")
-    
+
     print("Simulation stopped.")
+
 
 if __name__ == "__main__":
     main()

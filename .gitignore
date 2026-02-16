@@ -12,3 +12,10 @@ infra/*.pem
 
 /terraform
 *.zip
+
+agent-skills/
+
+data/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
