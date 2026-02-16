@@ -12,46 +12,50 @@ This is a portfolio project focused on practical system design and operational w
 
 ## Current Status
 
-Implemented through **Phase 2**:
+Implemented through **Phase 3 foundation**:
 - SQLite persistence for logs and alerts
 - FastAPI read APIs
 - Realtime alert updates in the frontend via WebSocket
 - Alert lifecycle actions from UI (`ACKNOWLEDGED`, `SUPPRESSED`)
+- Docker Compose one-command startup (`simulator + api + frontend`)
 - Automated tests for storage, processor, alerts, anomaly detection, and API behavior
 
-## Deployment Mode
+## Quick Start (One Command via Docker Compose)
 
-- Local mode is the default and fully supported.
-- AWS/EC2 deployment is optional and used for infrastructure demonstration.
+### 1. Start all services
 
-## What It Does
-
-### Log pipeline
-- `src/generator.py` emits synthetic logs with timestamps, service, metrics, and event type.
-- `src/processor.py` analyzes each log entry and raises alerts when rules or ML detection trigger.
-- `src/alerts.py` enriches and prints alert payloads.
-- `src/actions.py` runs simulated remediation actions based on alert type.
-- `src/storage.py` persists logs + alerts in SQLite.
-- `src/api.py` serves dashboard data and alert lifecycle actions via FastAPI.
-
-### Detection coverage
-- High CPU utilization
-- High memory utilization
-- Potential brute-force attack (failed auth burst)
-- High error rate (sliding time window)
-- ML anomaly detection per service using Isolation Forest (`scikit-learn`)
-
-## Repository Structure
-
-```text
-src/         Application code (simulation + API + persistence)
-tests/       Unit tests
-infra/       Terraform + EC2 bootstrap template
-frontend/    React + Vite dashboard
-docs/        Local planning notes (ignored in git)
+```bash
+docker compose up --build
 ```
 
-## Quick Start (Local)
+### 2. Open dashboard
+
+- Frontend: `http://localhost:5173`
+- API health: `http://localhost:8000/health`
+
+### 3. Stop services
+
+```bash
+docker compose down
+```
+
+To remove containers + volume data:
+
+```bash
+docker compose down -v
+```
+
+## Environment Configuration
+
+Copy `.env.example` to `.env` (optional), then adjust values:
+
+```bash
+API_PORT=8000
+FRONTEND_PORT=5173
+DB_PATH=/app/data/observability.db
+```
+
+## Manual Local Run (Without Docker)
 
 ### 1. Install Python dependencies
 
@@ -63,12 +67,6 @@ python3 -m pip install -r requirements-dev.txt
 
 ```bash
 python3 src/main.py --duration 120
-```
-
-Optional runtime tuning:
-
-```bash
-python3 src/main.py --duration 120 --min-interval 0.05 --max-interval 0.2
 ```
 
 ### 3. Run API (terminal B)
@@ -84,8 +82,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-Dashboard: `http://localhost:5173`
 
 ### 5. Run tests
 
@@ -119,6 +115,16 @@ python3 -m pytest -q
 - `WS /ws/alerts`
   - `snapshot` frame on connect (latest alerts)
   - `delta` frame for newly inserted alerts
+
+## Repository Structure
+
+```text
+src/         Application code (simulation + API + persistence)
+tests/       Unit tests
+infra/       Terraform + EC2 bootstrap template
+frontend/    React + Vite dashboard
+docs/        Local planning notes (ignored in git)
+```
 
 ## Deploy to AWS (EC2 + Terraform)
 
@@ -155,6 +161,5 @@ CI intentionally does not deploy infrastructure.
 
 ## Roadmap
 
-- Phase 3: Docker Compose for one-command startup (`simulator + api + frontend`)
 - Auth + RBAC
 - Incident assignment workflows

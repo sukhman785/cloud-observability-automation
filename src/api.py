@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any, Dict
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
@@ -9,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.storage import Storage
 
 app = FastAPI(title="Cloud Observability API", version="0.2.0")
-storage = Storage()
+storage = Storage(db_path=os.getenv("DB_PATH", "data/observability.db"))
 
 app.add_middleware(
     CORSMiddleware,
