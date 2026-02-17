@@ -1,4 +1,4 @@
-# Cloud Observability & Automated Response Platform
+# Cloud-AutoOps
 
 Python-based simulation of an observability pipeline that:
 - generates structured service logs
